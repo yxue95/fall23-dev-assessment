@@ -1,11 +1,15 @@
 import './App.css';
+import React from 'react';
+import VolunteerTable from './VolunteerTable';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <p>Hello World!</p>
+    <div style={{ textAlign: 'center'}}>
+      <h1>Volunteer Management System</h1>
+      <VolunteerTable />
     </div>
   );
 }
 
 export default App;
+

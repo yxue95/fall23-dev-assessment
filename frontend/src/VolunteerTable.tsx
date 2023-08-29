@@ -15,46 +15,146 @@ interface Volunteer {
 }
 
 const VolunteerTable: React.FC = () => {
-    const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
-  
-    useEffect(() => {
-      fetch('http://localhost:5001/api/bog/users')
-        .then(response => response.json())
-        .then(data => setVolunteers(data))
-        .catch(error => console.error('Error fetching volunteers:', error));
-    }, []);
-  
-    return (
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>Name</Th>
-            <Th>Profile Picture</Th>
-            <Th>Phone</Th>
-            <Th>Email</Th>
-            <Th>Rating</Th>
-            <Th>Status</Th>
-            <Th>Hero Project</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {volunteers.map(volunteer => (
-            <Tr key={volunteer.id}>
-              <Td>{volunteer.name}</Td>
-              <Td>
-                <img src={volunteer.avatar} alt={`${volunteer.name}'s profile`} />
-              </Td>
-              <Td>{volunteer.phone}</Td>
-              <Td>{volunteer.email}</Td>
-              <Td>{volunteer.rating}</Td>
-              <Td>{volunteer.status ? 'Active' : 'Inactive'}</Td>
-              <Td>{volunteer.hero_project}</Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
-    );
+  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editedData, setEditedData] = useState<Volunteer | null>(null);
+
+  useEffect(() => {
+    fetch('http://localhost:5001/api/bog/users')
+      .then(response => response.json())
+      .then(data => setVolunteers(data))
+      .catch(error => console.error('Error fetching volunteers:', error));
+  }, []);
+
+  const addNewVolunteer = () => {
+    const newVolunteer: Volunteer = {
+      name: '',
+      avatar: '',
+      hero_project: '',
+      notes: '',
+      email: '',
+      phone: '',
+      rating: '',
+      status: false,
+      id: `${Date.now()}`,  // You could use some other method to generate a unique ID
+    };
+    setVolunteers([newVolunteer, ...volunteers]);
+    setEditingId(newVolunteer.id);
+    setEditedData(newVolunteer);
   };
-  
-  export default VolunteerTable;
-  
+
+  const handleEdit = (id: string, volunteerData: Volunteer) => {
+    setEditingId(id);
+    setEditedData(volunteerData);
+  };
+
+  const handleDelete = (id: string) => {
+    setVolunteers(volunteers.filter(volunteer => volunteer.id !== id));
+  };
+
+  const handleSave = (id: string) => {
+    setVolunteers(
+      volunteers.map(volunteer => (volunteer.id === id ? editedData as Volunteer : volunteer))
+    );
+    setEditingId(null);
+  };
+
+  return (
+    <div>
+    <button onClick={addNewVolunteer}>Add New Volunteer</button> 
+    <Table>
+      <Thead>
+        <Tr>
+          <Th>Name</Th>
+          <Th>Profile Picture</Th>
+          <Th>Phone</Th>
+          <Th>Email</Th>
+          <Th>Rating</Th>
+          <Th>Status</Th>
+          <Th>Hero Project</Th>
+          <Th>Actions</Th>
+        </Tr>
+      </Thead>
+      <Tbody>
+        {volunteers.map(volunteer => (
+          <Tr key={volunteer.id}>
+            {editingId === volunteer.id ? (
+              <>
+                <Td>
+                  <input
+                    defaultValue={volunteer.name}
+                    onChange={e => setEditedData({ ...editedData!, name: e.target.value })}
+                  />
+                </Td>
+                <Td>
+                  <input
+                    defaultValue={volunteer.avatar}
+                    onChange={e => setEditedData({ ...editedData!, avatar: e.target.value })}
+                  />
+                </Td>
+                <Td>
+                  <input
+                    defaultValue={volunteer.phone}
+                    onChange={e => setEditedData({ ...editedData!, phone: e.target.value })}
+                  />
+                </Td>
+                <Td>
+                  <input
+                    defaultValue={volunteer.email}
+                    onChange={e => setEditedData({ ...editedData!, email: e.target.value })}
+                  />
+                </Td>
+                <Td>
+                  <input
+                    defaultValue={volunteer.rating}
+                    onChange={e => setEditedData({ ...editedData!, rating: e.target.value })}
+                  />
+                </Td>
+                <Td>
+                  <select
+                    defaultValue={volunteer.status ? 'Active' : 'Inactive'}
+                    onChange={e =>
+                      setEditedData({ ...editedData!, status: e.target.value === 'Active' })
+                    }
+                  >
+                    <option>Active</option>
+                    <option>Inactive</option>
+                  </select>
+                </Td>
+                <Td>
+                  <input
+                    defaultValue={volunteer.hero_project}
+                    onChange={e => setEditedData({ ...editedData!, hero_project: e.target.value })}
+                  />
+                </Td>
+              </>
+            ) : (
+              <>
+                <Td>{volunteer.name}</Td>
+                <Td>
+                  <img src={volunteer.avatar} alt={`${volunteer.name}'s profile`} />
+                </Td>
+                <Td>{volunteer.phone}</Td>
+                <Td>{volunteer.email}</Td>
+                <Td>{volunteer.rating}</Td>
+                <Td>{volunteer.status ? 'Active' : 'Inactive'}</Td>
+                <Td>{volunteer.hero_project}</Td>
+              </>
+            )}
+            <Td>
+              {editingId === volunteer.id ? (
+                <button onClick={() => handleSave(volunteer.id)}>Save</button>
+              ) : (
+                <button onClick={() => handleEdit(volunteer.id, volunteer)}>Edit</button>
+              )}
+              <button onClick={() => handleDelete(volunteer.id)}>Delete</button>
+            </Td>
+          </Tr>
+        ))}
+      </Tbody>
+    </Table>
+    </div>
+  );
+};
+
+export default VolunteerTable;

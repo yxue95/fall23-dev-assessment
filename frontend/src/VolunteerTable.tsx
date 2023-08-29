@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Thead, Tbody, Tr, Th, Td } from 'react-super-responsive-table';
 import 'react-super-responsive-table/dist/SuperResponsiveTableStyle.css';
+import { Link } from 'react-router-dom';
 
 interface Volunteer {
   name: string;
@@ -170,7 +171,7 @@ const VolunteerTable: React.FC = () => {
               </>
             ) : (
               <>
-                <Td>{volunteer.name}</Td>
+                <Td><Link to={`/volunteer/${volunteer.id}`}>{volunteer.name}</Link></Td>
                 <Td>
                   <img src={volunteer.avatar} alt={`${volunteer.name}'s profile`} />
                 </Td>

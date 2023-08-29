@@ -36,11 +36,21 @@ const VolunteerTable: React.FC = () => {
       phone: '',
       rating: '',
       status: false,
-      id: `${Date.now()}`,  // You could use some other method to generate a unique ID
+      id: `${Date.now()}`,
     };
-    setVolunteers([newVolunteer, ...volunteers]);
-    setEditingId(newVolunteer.id);
-    setEditedData(newVolunteer);
+    fetch('http://localhost:5001/api/bog/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newVolunteer),
+    })
+      .then(res => res.json())
+      .then(data => {
+        setVolunteers([data, ...volunteers]);
+        setEditingId(data.id);
+        setEditedData(data);
+      });
   };
 
   const handleEdit = (id: string, volunteerData: Volunteer) => {
@@ -48,15 +58,29 @@ const VolunteerTable: React.FC = () => {
     setEditedData(volunteerData);
   };
 
-  const handleDelete = (id: string) => {
-    setVolunteers(volunteers.filter(volunteer => volunteer.id !== id));
+  const handleSave = (id: string) => {
+    fetch(`http://localhost:5001/api/bog/users/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(editedData),
+    })
+      .then(res => res.json())
+      .then(data => {
+        setVolunteers(
+          volunteers.map(volunteer => (volunteer.id === id ? data : volunteer))
+        );
+        setEditingId(null);
+      });
   };
 
-  const handleSave = (id: string) => {
-    setVolunteers(
-      volunteers.map(volunteer => (volunteer.id === id ? editedData as Volunteer : volunteer))
-    );
-    setEditingId(null);
+  const handleDelete = (id: string) => {
+    fetch(`http://localhost:5001/api/bog/users/${id}`, {
+      method: 'DELETE',
+    }).then(() => {
+      setVolunteers(volunteers.filter(volunteer => volunteer.id !== id));
+    });
   };
 
   return (

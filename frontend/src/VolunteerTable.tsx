@@ -19,6 +19,10 @@ const VolunteerTable: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedData, setEditedData] = useState<Volunteer | null>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+
   useEffect(() => {
     fetch('http://localhost:5001/api/bog/users')
       .then(response => response.json())
@@ -83,6 +87,16 @@ const VolunteerTable: React.FC = () => {
     });
   };
 
+  const handlePrevious = () => {
+    setCurrentPage(currentPage > 1 ? currentPage - 1 : 1);
+  };
+  
+  const handleNext = () => {
+    const totalPages = Math.ceil(volunteers.length / itemsPerPage);
+    setCurrentPage(currentPage < totalPages ? currentPage + 1 : totalPages);
+  };
+  
+
   return (
     <div>
     <button onClick={addNewVolunteer}>Add New Volunteer</button> 
@@ -100,7 +114,9 @@ const VolunteerTable: React.FC = () => {
         </Tr>
       </Thead>
       <Tbody>
-        {volunteers.map(volunteer => (
+        {volunteers
+        .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+        .map(volunteer => (
           <Tr key={volunteer.id}>
             {editingId === volunteer.id ? (
               <>
@@ -177,6 +193,10 @@ const VolunteerTable: React.FC = () => {
         ))}
       </Tbody>
     </Table>
+    <div>
+        <button onClick={handlePrevious}>Previous</button>
+        <button onClick={handleNext}>Next</button>
+      </div>
     </div>
   );
 };

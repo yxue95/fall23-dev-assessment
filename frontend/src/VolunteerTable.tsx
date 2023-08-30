@@ -15,7 +15,11 @@ interface Volunteer {
   id: string;
 }
 
-const VolunteerTable: React.FC = () => {
+interface VolunteerTableProps {
+  role: 'admin' | 'viewer';
+}
+
+const VolunteerTable: React.FC<VolunteerTableProps> = ({ role }) => {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedData, setEditedData] = useState<Volunteer | null>(null);
@@ -136,10 +140,12 @@ const VolunteerTable: React.FC = () => {
   // Filter first, then sort
   const displayedVolunteers = sortVolunteers(filterVolunteers(volunteers));
   
+  const isViewer = role === 'viewer';
 
   return (
     <div>
-    <button onClick={addNewVolunteer}>Add New Volunteer</button> 
+      {!isViewer && <button onClick={addNewVolunteer}>Add New Volunteer</button> }
+    
     <Table>
       <Thead>
         <Tr>
@@ -232,6 +238,7 @@ const VolunteerTable: React.FC = () => {
                 <Td>{volunteer.hero_project}</Td>
               </>
             )}
+            {!isViewer && (
             <Td>
               {editingId === volunteer.id ? (
                 <button onClick={() => handleSave(volunteer.id)}>Save</button>
@@ -240,6 +247,7 @@ const VolunteerTable: React.FC = () => {
               )}
               <button onClick={() => handleDelete(volunteer.id)}>Delete</button>
             </Td>
+            )}
           </Tr>
         ))}
       </Tbody>

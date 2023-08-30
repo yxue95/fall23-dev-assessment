@@ -23,6 +23,8 @@ const VolunteerTable: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  const [clickCounts, setClickCounts] = useState<{ [id: string]: number }>({});
+
 
   useEffect(() => {
     fetch('http://localhost:5001/api/bog/users')
@@ -96,6 +98,13 @@ const VolunteerTable: React.FC = () => {
     const totalPages = Math.ceil(volunteers.length / itemsPerPage);
     setCurrentPage(currentPage < totalPages ? currentPage + 1 : totalPages);
   };
+
+  const handleRowClick = (id: string) => {
+    setClickCounts(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1,
+    }));
+  };
   
 
   return (
@@ -118,7 +127,7 @@ const VolunteerTable: React.FC = () => {
         {volunteers
         .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
         .map(volunteer => (
-          <Tr key={volunteer.id}>
+          <Tr key={volunteer.id} onClick={() => handleRowClick(volunteer.id)}>
             {editingId === volunteer.id ? (
               <>
                 <Td>
@@ -194,6 +203,14 @@ const VolunteerTable: React.FC = () => {
         ))}
       </Tbody>
     </Table>
+    <h2>Row Click Statistics</h2>
+      <ul>
+        {Object.keys(clickCounts).map(id => (
+          <li key={id}>
+            Row for Volunteer ID {id} has been clicked {clickCounts[id]} times.
+          </li>
+        ))}
+      </ul>
     <div>
         <button onClick={handlePrevious}>Previous</button>
         <button onClick={handleNext}>Next</button>

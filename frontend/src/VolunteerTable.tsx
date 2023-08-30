@@ -25,6 +25,9 @@ const VolunteerTable: React.FC = () => {
 
   const [clickCounts, setClickCounts] = useState<{ [id: string]: number }>({});
 
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [filterTerm, setFilterTerm] = useState<string>('');
+
 
   useEffect(() => {
     fetch('http://localhost:5001/api/bog/users')
@@ -105,6 +108,33 @@ const VolunteerTable: React.FC = () => {
       [id]: (prev[id] || 0) + 1,
     }));
   };
+
+  const sortVolunteers = (volunteers: Volunteer[]) => {
+    const sortedVolunteers = [...volunteers];
+    if (sortDirection === 'asc') {
+      sortedVolunteers.sort((a, b) => a.hero_project.localeCompare(b.hero_project));
+    } else {
+      sortedVolunteers.sort((a, b) => b.hero_project.localeCompare(a.hero_project));
+    }
+    return sortedVolunteers;
+  };
+
+  const filterVolunteers = (volunteers: Volunteer[]) => {
+    return volunteers.filter(volunteer => 
+      volunteer.hero_project.toLowerCase().includes(filterTerm.toLowerCase())
+    );
+  };
+
+  const toggleSort = () => {
+    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+  };
+
+  const handleFilterInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilterTerm(e.target.value);
+  };
+
+  // Filter first, then sort
+  const displayedVolunteers = sortVolunteers(filterVolunteers(volunteers));
   
 
   return (
@@ -119,12 +149,23 @@ const VolunteerTable: React.FC = () => {
           <Th>Email</Th>
           <Th>Rating</Th>
           <Th>Status</Th>
-          <Th>Hero Project</Th>
+          <Th>
+            Hero Project
+            <button onClick={toggleSort}>
+              Sort {sortDirection === 'asc' ? 'A-Z' : 'Z-A'}
+            </button>
+            <input
+              type="text"
+              placeholder="Filter..."
+              value={filterTerm}
+              onChange={handleFilterInputChange}
+            />
+            </Th>
           <Th>Actions</Th>
         </Tr>
       </Thead>
       <Tbody>
-        {volunteers
+        {displayedVolunteers
         .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
         .map(volunteer => (
           <Tr key={volunteer.id} onClick={() => handleRowClick(volunteer.id)}>
